@@ -1,0 +1,29 @@
+.plug, .plugboard_row, .plugboard {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.plug {
+  border: 1px solid red;
+  width: 40px;
+  height: 60px;
+  margin: 10px;
+  flex-direction: column;
+}
+
+.plug_inner {
+  height: 40px;
+  width: 40px;
+  border-radius: 20px;
+  background-color: gray;
+}
+
+.plug_row {
+  width: 75%;
+}
+
+.plugboard {
+  flex-direction: column;
+  flex-wrap: wrap;
+}

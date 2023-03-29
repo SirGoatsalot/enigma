@@ -1,0 +1,37 @@
+@use 'sass:color';
+
+.key, .display_row, .display {
+  color: $key-text-color;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.key {
+  border-radius: 20px;
+  border: 3px solid $background-color;
+  width: 40px;
+  height: 40px;
+  margin: 10px;
+}
+
+.dark {
+  background-color: $key-background-color;
+}
+
+.lit {
+  background-color: color.scale($key-background-color, $lightness: 80%);
+}
+
+.selected, .key:hover {
+  border: 3px solid $key-select-color;
+}
+
+.display_row {
+  width: 75%;
+}
+
+.display {
+  flex-direction: column;
+  flex-wrap: wrap;
+}

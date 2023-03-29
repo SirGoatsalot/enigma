@@ -1,9 +1,14 @@
 import React from 'react';
+import Rotors from './Rotors.jsx';
+import Plugboard from './Plugboard.jsx';
+import Display from './Display.jsx';
 
 const App = () => {
   return (
     <div>
-      Hello, World!
+      <Rotors />
+      <Display />
+      <Plugboard />
     </div>
   );
 };

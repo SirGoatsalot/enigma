@@ -1,0 +1,13 @@
+@use 'sass:color'; 
+
+// Global values
+$background-color: rgb(41, 41, 41);
+$primary-text-color: rgb(201, 201, 201);
+
+// values for key display
+$key-background-color: rgb(190, 162, 0);
+$key-text-color: color.adjust($primary-text-color, $lightness: -80%);
+$key-select-color: rgb(57, 128, 0);
+
+// values for plugboard display
+$plug-color: black;
