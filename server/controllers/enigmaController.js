@@ -1,7 +1,7 @@
-const enigma = require('../models/enigma.js');
+const Enigma = require('../models/enigma.js');
 
-const enigmaController = {};
-
-enigma
-
-export default enigmaController;
+const en = new Enigma();
+en.reset();
+en.encode('Hello, World!');
+en.reset();
+en.encode('QDKAVNQGGC');

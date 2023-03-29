@@ -14,5 +14,5 @@ Web-app version of the German WWII Enigma machine. **WIP**
 
 ### Backend
 
-[ ] Decide how to store rotor configs and states
+[ ] make swappable rotors
 [ ] Make it work
