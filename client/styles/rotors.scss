@@ -1,16 +1,30 @@
-.rotor {
-  border: 1px red solid;
-  width: 50px;
-  height: 300px;
-  margin-left: 50px;
-  margin-right: 50px;
-}
-
 .rotors {
-  border: 1px green solid;
   align-items: center;
   justify-content: center;
   display: flex;
   flex-direction: row;
   height: 400px;
+}
+
+.rotor_container {
+  height: 300px;
+  margin-left: 50px;
+  margin-right: 50px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.rotor {
+  background-color: $window-background-color;
+  height: 300px;
+  width: 40px;
+}
+
+.window {
+  margin: 10px;
+  height: 40px;
+  width: 40px;
+  color: $window-text-color;
+  background-color: $window-background-color;
 }

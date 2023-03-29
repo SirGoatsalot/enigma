@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 .plug, .plugboard_row, .plugboard {
   display: flex;
   justify-content: center;
@@ -5,7 +7,6 @@
 }
 
 .plug {
-  border: 1px solid red;
   width: 40px;
   height: 60px;
   margin: 10px;
@@ -16,7 +17,21 @@
   height: 40px;
   width: 40px;
   border-radius: 20px;
-  background-color: gray;
+  background-color: $plug-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.plug_inner div {
+  height: 25px;
+  width: 25px;
+  border-radius: 20px;
+  background-color: color.scale($plug-color, $lightness: 30%);
+}
+
+.plug_inner div:hover {
+  background-color: $plug-select-color;
 }
 
 .plug_row {

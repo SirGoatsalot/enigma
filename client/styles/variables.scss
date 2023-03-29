@@ -11,3 +11,8 @@ $key-select-color: rgb(57, 128, 0);
 
 // values for plugboard display
 $plug-color: black;
+$plug-select-color: rgb(107, 5, 5);
+
+// values for rotors
+$window-background-color: rgb(134, 134, 134);
+$window-text-color: color.adjust($primary-text-color, $lightness: -80%);
