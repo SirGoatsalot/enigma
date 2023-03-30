@@ -1,90 +1,120 @@
 const fs = require('fs');
 const path = require('path');
 
-// Rotor and relfector config from https://web.stanford.edu/class/cs106j/handouts/36-TheEnigmaMachine.pdf
-// Must add more rotors and configs in separate file or db
-// see http://www.cryptomuseum.alibaba.sk/crypto/enigma/wiring.htm
-const INITIAL_ROTORS_STATE = [
-  [
-    4, 10, 12, 5, 11, 6, 3, 16,
-    21, 25, 13, 19, 14, 22, 24,
-    7, 23, 20, 18, 15, 0, 8, 1,
-    17, 2, 9
-  ],[
-    4, 10, 12, 5, 11, 6, 3, 16,
-    21, 25, 13, 19, 14, 22, 24,
-    7, 23, 20, 18, 15, 0, 8, 1,
-    17, 2, 9
-  ],[
-    4, 10, 12, 5, 11, 6, 3, 16,
-    21, 25, 13, 19, 14, 22, 24,
-    7, 23, 20, 18, 15, 0, 8, 1,
-    17, 2, 9
-  ]];
-const REFLECTOR_MAP = [
-  4,  9, 12, 25,  0, 11, 24, 23,
- 21,  1, 22,  5,  2, 17, 16, 20,
- 14, 13, 19, 18, 15,  8, 10,  7,
-  6,  3
-];
-const INITIAL_PLUGBOARD_MAP = [
-  1, 2, 3, 4, 5, 6, 7, 8, 9,
-  10, 11, 12, 13, 14, 15, 16,
-  17, 18, 19, 20, 21, 22, 23,
-  24, 25, 0
-];
+const ROTORS_PATH = path.join(__dirname, 'rotors.json');
+const ROTOR_SETTINGS = JSON.parse(fs.readFileSync(ROTORS_PATH));
 
 const ALPHABET = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J' ,'K' ,'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
-const STATE_PATH = path.join(__dirname, 'state.json');
 
 class enigma {
-  constructor(rotors = INITIAL_ROTORS_STATE, plugboard=INITIAL_PLUGBOARD_MAP, reflector=REFLECTOR_MAP) {
-    this.rotors = rotors;
-    this.plugboard = plugboard;
-    this.reflector = reflector;
-    this.rotations = [0, 0 ,0];
-    this.setState(this.rotors, this.plugboard, this.reflector);
+  /**
+   * Create a new enigma machine, and initialize its settings to the default (can be changed in rotors.json):
+   * Rotors: I, II, III
+   * Rotor Positions: A, A, A
+   * Reflector: UKW_A
+   * Plugboard: 'BCDEFGHIJKLMNOPQRSTUVWXYZA'
+   */
+  constructor() {
+    this.rotors = [];
+    this.plugboard = [];
+    this.reflector = [];
+    this.rotorPositions = [0, 0 ,0];
+
+    const defaults = ROTOR_SETTINGS.defaults;
+    this.set(defaults.rotors, defaults.rotorsSetting, defaults.reflector, defaults.plugboard);
   }
 
   /**
-   * Reset the enigma machine's state to the default,
-   * with each rotor set to the 'A' position, and the
-   * plugboard set with A -> B, C -> D, E -> F, and so on.
+   * Helper function to convert a rotor setting string into
+   * a positional array for ease of use.
+   * @param {string} setting 
    */
-  reset() {
-    this.setState(INITIAL_ROTORS_STATE, INITIAL_PLUGBOARD_MAP, REFLECTOR_MAP);
-    console.log('reset!');
+  convertToNums(setting) {
+    const result = [];
+    for (const letter of setting.split('')) result.push(ALPHABET.indexOf(letter));
+    return result;
   }
 
   /**
-   * Update the plugboard in state.json, then update the 
-   * current model of the enigma machine.
-   * @param {} plugboard 
-   * @param {} rotors
+   * Set the enigma machine's rotors, reflector, and plugboard. Set any argument to null to leave its setting unchanged.
+   * 
+   * @param {String[]} rotors Array of roman numerals (I-V) representing the wheels, with the fastest rotor at index 2 and the slowest at index 0. 
+   *  ex: ['IV', 'III', 'II']
+   * @param {String} rotorPositions String representing the rotor configuration. 
+   *  ex: 'ABC'
+   * @param {String} reflector String name of relfector module to use, beginning with 'UKW'. 
+   *  ex: 'UKW_B'
+   * @param {String} plugboard String of plugboard connections, where each pair of letters is a connection.
+   *  ex: 'AB CD EF'
    */
-  setState(rotors, plugboard, reflector) {
-    fs.writeFileSync(STATE_PATH, '{}');
-    const newStartingPosition = {rotors, plugboard, reflector};
-    fs.writeFileSync(STATE_PATH, JSON.stringify(newStartingPosition));
-    this.rotors = rotors;
-    this.plugboard = plugboard;
-    this.reflector = reflector;
+  set(rotors, rotorPositionsParam, reflector, plugboard) {
+    if (rotors) {
+      rotors.forEach((element, index) => {
+        this.rotors[index] = this.convertToNums(ROTOR_SETTINGS[element]);
+      });
+    }
+    if (rotorPositionsParam) {
+      // find difference between old and new rotors
+      // rotate the rotors that number of times
+      const newRotorPositions = this.convertToNums(rotorPositionsParam);
+      const rotorPositionDiff = this.rotorPositions.map((oldPosition, rotor) => newRotorPositions[rotor] - oldPosition);
+      rotorPositionDiff.forEach((diff, rotor, array) => {
+        console.log('Position diff: ', diff);
+        if (diff < 0) diff += 26;
+        console.log('Rotations: ', diff);
+        for (let i = 0; i < diff; i++) this.rotate(rotor, false);
+      });
+    }
+    if (plugboard) {
+      const newPlugboard = {};
+      const plugboardSplit = plugboard.split(' ');
+      plugboardSplit.forEach((element, index, array) => {
+        const firstInd = ALPHABET.indexOf(element[0]);
+        const secondInd = ALPHABET.indexOf(element[1]);
+        newPlugboard[firstInd] = secondInd;
+        newPlugboard[secondInd] = firstInd;
+      });
+      this.plugboard = newPlugboard;
+    }
+    
+    this.reflector = reflector ? this.convertToNums(ROTOR_SETTINGS[reflector]) : this.reflector; 
+  }
+
+  /**
+   * Log information about this enigma machine. Set the params true for each item to log.
+   * 
+   * @param {*} rotors 
+   * @param {*} rotorPositions 
+   * @param {*} reflector 
+   * @param {*} plugboard 
+   */
+  log(rotors, rotorPositions, reflector, plugboard) {
+    console.log(`---- ENIGMA LOG BEGIN ----`);
+    if (rotors) console.log(`Rotors: `, this.rotors);
+    if (rotorPositions) console.log(`Rotor Positions: `, this.rotorPositions);
+    if (reflector) console.log(`Reflector: `, this.reflector);
+    if (plugboard) console.log(`Plugboard: `, this.plugboard);
+    console.log(`----- ENIGMA LOG END -----`);
   }
 
   /**
  * Rotates the given rotor one turn.
+ * 
+ * @param {int} rotorNum
+ * @param {boolean} cascade whether or not the turning of this rotor should affect other rotors
  */
-  rotate(rotorNum) {
-    this.rotations[rotorNum]++;
-    if (this.rotations[rotorNum] > 26 && rotorNum != 0) {
-      this.rotate(rotorNum - 1);
-      this.rotations[rotorNum] = 0;
+  rotate(rotorNum, cascade) {
+    // Keep track of how many times each rotor has been changed
+    this.rotorPositions[rotorNum] += 1;
+    // if a rotor does a full 360, reset its counter to 0 and rotate the rotor next to it
+    if (this.rotorPositions[rotorNum] > 25) {
+      this.rotorPositions[rotorNum] = 0;
+      if (cascade && rotorNum !== 0) this.rotate(rotorNum - 1, cascade);
     }
+
+    // rotate the rotor by moving everything back one index
     const currentRotor = this.rotors[rotorNum];
-    currentRotor.forEach((element, index, array) => {
-      if (index === 25) array[index] = array[0];
-      else array[index] = array[index+1];
-    });
+    currentRotor.push(currentRotor.shift());
   }
 
   /**
@@ -114,7 +144,6 @@ class enigma {
 
       console.log(`${letter} -> ${finalLetter}`);
     }
-    this.reset();
   };
 
   /**
@@ -122,7 +151,7 @@ class enigma {
    * @param {String} message 
    */
   decode(message) {
-    
+
   }
 };
 
